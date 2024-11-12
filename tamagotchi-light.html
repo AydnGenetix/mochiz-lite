@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tamagotchi Light</title>
+    <style>
+        @font-face {
+            font-family: 'earlygameboy';
+            src: url('data:font/truetype;charset=utf-8;base64,/* ici on mettra la font convertie en base64 */') format('truetype');
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'earlygameboy', sans-serif;
+        }
+
+        body {
+            background-color: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            width: 300px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .tama-image {
+            width: 120px;
+            height: 120px;
+            margin: 10px auto;
+        }
+
+        .status-bar {
+            background: rgba(255, 255, 255, 0.1);
+            height: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .health-bar {
+            background: linear-gradient(to right, #ff0055, #ff4081);
+            height: 100%;
+            width: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .exp-bar {
+            background: linear-gradient(to right, #00ff88, #00ffcc);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background: #ff4081;
+            color: white;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .shower-button {
+            background: #00bcd4;
+        }
+
+        .stats {
+            font-size: 12px;
+            margin: 10px 0;
+        }
+
+        .description {
+            font-size: 14px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="1.gif" alt="Tamagotchi" class="tama-image" id="tamaImage">
+        <div class="description" id="description">Je vais bien ! 😊</div>
+        
+        <div class="stats">
+            Santé: <span id="healthText">100</span>%
+        </div>
+        <div class="status-bar">
+            <div class="health-bar" id="healthBar"></div>
+        </div>
+
+        <div class="stats">
+            Niveau <span id="levelText">1</span>
+            (<span id="expText">0</span>/<span id="expNeededText">100</span>)
+        </div>
+        <div class="status-bar">
+            <div class="exp-bar" id="expBar"></div>
+        </div>
+
+        <div class="buttons">
+            <button onclick="feed()" id="feedButton">Nourrir</button>
+            <button onclick="shower()" id="showerButton" class="shower-button">Douche</button>
+        </div>
+    </div>
+
+    <script>
+        const state = {
+            health: 100,
+            lastFed: Date.now(),
+            level: 1,
+            experience: 0,
+            experienceToNextLevel: 100,
+            lastShowerDate: null,
+            isShowering: false,
+            overfeedCount: 0,
+            isDead: false
+        };
+
+        const OVERFEED_LIMIT = 10;
+        const XP_GAIN = 20;
+        const SHOWER_XP_MULTIPLIER = 2;
+
+        const images = {
+            happy: '5.gif',
+            ok: '4.gif',
+            bad: '2.gif',
+            sad: '1.gif',
+            dead: '7.gif',
+            eating: '3.gif',
+            overfed: '9.gif',
+            showering: '8.gif'
+        };
+
+        function updateUI() {
+            const healthBar = document.getElementById('healthBar');
+            const expBar = document.getElementById('expBar');
+            const healthText = document.getElementById('healthText');
+            const levelText = document.getElementById('levelText');
+            const expText = document.getElementById('expText');
+            const expNeededText = document.getElementById('expNeededText');
+            const tamaImage = document.getElementById('tamaImage');
+            const description = document.getElementById('description');
+
+            healthBar.style.width = `${state.health}%`;
+            healthText.textContent = Math.round(state.health);
+            
+            const expPercentage = (state.experience / state.experienceToNextLevel) * 100;
+            expBar.style.width = `${expPercentage}%`;
+            
+            levelText.textContent = state.level;
+            expText.textContent = state.experience;
+            expNeededText.textContent = state.experienceToNextLevel;
+
+            // Mise à jour de l'image et de la description
+            let currentState = 'happy';
+            let desc = 'Je vais bien ! 😊';
+
+            if (state.isDead) {
+                currentState = 'dead';
+                desc = 'Je suis mort... 💀';
+            } else if (state.isShowering) {
+                currentState = 'showering';
+                desc = 'Je me lave ! 🚿';
+            } else if (state.overfeedCount > 0) {
+                currentState = 'overfed';
+                desc = 'Je suis trop nourri! 🤢';
+            } else if (state.health <= 20) {
+                currentState = 'sad';
+                desc = 'Je suis très triste... 😢';
+            } else if (state.health <= 50) {
+                currentState = 'bad';
+                desc = 'J\'ai vraiment faim... 😟';
+            }
+
+            tamaImage.src = images[currentState];
+            description.textContent = desc;
+        }
+
+        function feed() {
+            if (state.isDead || state.isShowering) return;
+
+            if (state.health >= 100) {
+                state.overfeedCount++;
+                if (state.overfeedCount >= OVERFEED_LIMIT) {
+                    state.isDead = true;
+                    state.health = 0;
+                }
+            } else {
+                state.health = Math.min(100, state.health + 20);
+                state.overfeedCount = 0;
+                // N'ajoute de l'expérience que si la santé n'est pas à 100%
+                if (state.health < 100) {
+                    addExperience(XP_GAIN);
+                }
+            }
+
+            state.lastFed = Date.now();
+            updateUI();
+        }
+
+        function canShower() {
+            if (!state.lastShowerDate) return true;
+            const lastShower = new Date(state.lastShowerDate);
+            const now = new Date();
+            return lastShower.getDate() !== now.getDate() || 
+                   lastShower.getMonth() !== now.getMonth() ||
+                   lastShower.getFullYear() !== now.getFullYear();
+        }
+
+        function shower() {
+            if (!canShower() || state.isDead || state.isShowering) return;
+
+            state.isShowering = true;
+            updateUI();
+
+            setTimeout(() => {
+                state.isShowering = false;
+                state.lastShowerDate = new Date().toISOString();
+                addExperience(XP_GAIN * SHOWER_XP_MULTIPLIER);
+                updateUI();
+            }, 3000);
+        }
+
+        function addExperience(amount) {
+            state.experience += amount;
+            if (state.experience >= state.experienceToNextLevel) {
+                state.level++;
+                state.experience -= state.experienceToNextLevel;
+                state.experienceToNextLevel = Math.floor(100 * Math.pow(1.5, state.level - 1));
+            }
+        }
+
+        // Diminution de la santé au fil du temps
+        setInterval(() => {
+            if (!state.isDead) {
+                const hoursSinceLastFed = (Date.now() - state.lastFed) / (1000 * 60 * 60);
+                let decrease = 0;
+
+                if (hoursSinceLastFed >= 72) {
+                    decrease = 0.5;
+                } else if (hoursSinceLastFed >= 48) {
+                    decrease = 0.3;
+                } else if (hoursSinceLastFed >= 24) {
+                    decrease = 0.2;
+                } else if (hoursSinceLastFed >= 12) {
+                    decrease = 0.1;
+                }
+
+                state.health = Math.max(0, state.health - decrease);
+                if (state.health <= 0) {
+                    state.isDead = true;
+                }
+                updateUI();
+            }
+        }, 1000);
+
+        // Charger l'état sauvegardé au démarrage
+        const savedState = localStorage.getItem('tamagotchiState');
+        if (savedState) {
+            Object.assign(state, JSON.parse(savedState));
+        }
+
+        // Sauvegarder l'état périodiquement
+        setInterval(() => {
+            localStorage.setItem('tamagotchiState', JSON.stringify(state));
+        }, 1000);
+
+        // Mise à jour initiale de l'UI
+        updateUI();
+    </script>
+</body>
+</html>
