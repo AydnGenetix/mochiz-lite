@@ -142,16 +142,19 @@
         const XP_GAIN = 20;
         const SHOWER_XP_MULTIPLIER = 2;
 
+const baseUrl = 'https://aydngenetix.github.io/mochiz-lite';
+
 const images = {
-    happy: 'images/5.gif',
-    ok: 'images/4.gif',
-    bad: 'images/2.gif',
-    sad: 'images/1.gif',
-    dead: 'images/7.gif',
-    eating: 'images/3.gif',
-    overfed: 'images/9.gif',
-    showering: 'images/8.gif'
-        };
+    happy: `${baseUrl}/images/5.gif`,
+    ok: `${baseUrl}/images/4.gif`,
+    bad: `${baseUrl}/images/2.gif`,
+    sad: `${baseUrl}/images/1.gif`,
+    dead: `${baseUrl}/images/7.gif`,
+    eating: `${baseUrl}/images/3.gif`,
+    overfed: `${baseUrl}/images/9.gif`,
+    showering: `${baseUrl}/images/8.gif`
+};
+
 
         function updateUI() {
             const healthBar = document.getElementById('healthBar');
