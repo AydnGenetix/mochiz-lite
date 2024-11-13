@@ -4,552 +4,117 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tamagotchi</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Press Start 2P', monospace;
-        }
-
-        body {
-            background-color: #1a1a1a;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            color: white;
-        }
-
-        .container {
-            width: 320px;
-            padding: 20px;
-            border-radius: 20px;
-            text-align: center;
-            background: linear-gradient(135deg, rgba(41, 41, 41, 0.9) 0%, rgba(26, 26, 26, 0.9) 100%);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.36);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .tama-container {
-            width: 180px;
-            height: 180px;
-            margin: 10px auto;
-            position: relative;
-            background: radial-gradient(circle, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.4) 100%);
-            border-radius: 15px;
-            padding: 10px;
-        }
-
-        .tama-svg {
-            width: 100%;
-            height: 100%;
-            filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
-        }
-
-        .status-bar {
-            background: rgba(0, 0, 0, 0.3);
-            height: 12px;
-            border-radius: 6px;
-            margin: 15px 0;
-            overflow: hidden;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .health-bar {
-            background: linear-gradient(90deg, #ff0055, #ff4081);
-            height: 100%;
-            width: 100%;
-            transition: width 0.3s ease;
-            border-radius: 4px;
-            box-shadow: 0 0 10px rgba(255, 64, 129, 0.5);
-        }
-
-        .exp-bar {
-            background: linear-gradient(90deg, #00ff88, #00ffcc);
-            height: 100%;
-            width: 0%;
-            transition: width 0.3s ease;
-            border-radius: 4px;
-            box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
-        }
-
-        .stats {
-            font-size: 10px;
-            margin: 15px 0;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            letter-spacing: 1px;
-        }
-
-        .description {
-            font-size: 12px;
-            margin: 15px 0;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        .buttons {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        button {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            font-size: 10px;
-            letter-spacing: 1px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-        }
-
-        button:first-child {
-            background: linear-gradient(45deg, #ff0055, #ff4081);
-            box-shadow: 0 4px 15px rgba(255, 64, 129, 0.3);
-        }
-
-        button:last-child {
-            background: linear-gradient(45deg, #00bcd4, #00e5ff);
-            box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);
-        }
-
-        button:hover:not(:disabled) {
-            transform: translateY(-2px);
-            filter: brightness(1.1);
-        }
-
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0) rotate(0); }
-            25% { transform: translateX(-5px) rotate(-5deg); }
-            75% { transform: translateX(5px) rotate(5deg); }
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(5px); }
-        }
-
-        .tama-svg.happy { animation: bounce 2s ease-in-out infinite; }
-        .tama-svg.eating { animation: shake 0.5s ease-in-out infinite; }
-        .tama-svg.sad { animation: float 4s ease-in-out infinite; }
-        .tama-svg.showering { animation: bounce 1s ease-in-out infinite; }
-    </style>
 </head>
 <body>
     <div class="container">
         <div class="tama-container">
-            <svg id="tamaImage" class="tama-svg" viewBox="0 0 100 100">
-                <!-- SVG will be injected by JavaScript -->
-            </svg>
+            <img id="tamaImage" class="tama-gif" src="https://media.giphy.com/media/i0ZeiD9MDhjwzdQPl2/giphy.gif" alt="Tamagotchi GIF">
         </div>
-        <div class="description" id="description">Je vais bien ! 😊</div>
-        
+
+        <div id="description" class="description">
+            Je vais bien ! 😊
+        </div>
+
         <div class="stats">
             Santé: <span id="healthText">100</span>%
         </div>
+
         <div class="status-bar">
-            <div class="health-bar" id="healthBar"></div>
+            <div id="healthBar" class="health-bar"></div>
         </div>
 
         <div class="stats">
-            Niveau <span id="levelText">1</span>
-            (<span id="expText">0</span>/<span id="expNeededText">100</span>)
+            Niveau <span id="levelText">1</span> (<span id="expText">0</span>/<span id="expNeededText">100</span>)
         </div>
+
         <div class="status-bar">
-            <div class="exp-bar" id="expBar"></div>
+            <div id="expBar" class="exp-bar"></div>
         </div>
 
         <div class="buttons">
-            <button onclick="feed()" id="feedButton">Nourrir</button>
-            <button onclick="shower()" id="showerButton">Douche</button>
+            <button id="feedButton">Nourrir</button>
+            <button id="cleanButton">Douche</button>
+        </div>
+
+        <div class="save-load">
+            <button id="saveButton">Sauvegarder</button>
+            <button id="loadButton">Charger</button>
         </div>
     </div>
 
     <script>
-        // On garde la même structure de state
-        const state = {
-            health: 100,
-            lastFed: Date.now(),
-            level: 1,
-            experience: 0,
-            experienceToNextLevel: 100,
-            lastShowerDate: null,
-            isShowering: false,
-            overfeedCount: 0,
-            isDead: false
+        const tamaImage = document.getElementById('tamaImage');
+        const healthText = document.getElementById('healthText');
+        const expText = document.getElementById('expText');
+        const levelText = document.getElementById('levelText');
+        const expNeededText = document.getElementById('expNeededText');
+        const feedButton = document.getElementById('feedButton');
+        const cleanButton = document.getElementById('cleanButton');
+        const saveButton = document.getElementById('saveButton');
+        const loadButton = document.getElementById('loadButton');
+
+        const tamaStates = {
+            sad: 'https://media.giphy.com/media/SmLZNWAlXBNCCYaYN8/giphy.gif',
+            bad: 'https://media.giphy.com/media/Mr2M8ab7ZjZT0vg3Dy/giphy.gif',
+            feed: 'https://media.giphy.com/media/Jm7CHnS37d3cz8Gipx/giphy.gif',
+            ok: 'https://media.giphy.com/media/i0ZeiD9MDhjwzdQPl2/giphy.gif',
+            happy: 'https://media.giphy.com/media/Ij9z5jvIq85O0XS8tU/giphy.gif',
+            mort: 'https://media.giphy.com/media/L3m1tQgQZ6qgKWzdyk/giphy.gif',
+            douche: 'https://media.giphy.com/media/chEsFCNmeTRAi80Tns/giphy.gif',
+            overfed: 'https://media.giphy.com/media/gwDCLlN7KRBsvsNavY/giphy.gif',
+            zombie: 'https://media.giphy.com/media/Lp6zuMndq12p7ZXLno/giphy.gif'
         };
 
-        const OVERFEED_LIMIT = 10;
-        const XP_GAIN = 20;
-        const SHOWER_XP_MULTIPLIER = 2;
+        let health = 100;
+        let exp = 0;
+        let level = 1;
+        const expNeeded = 100;
 
-        // Version améliorée des SVGs avec plus de détails et d'animations
-        const svgStates = {
-            happy: `
-                <defs>
-                    <radialGradient id="happyGradient">
-                        <stop offset="0%" stop-color="#FFD700"/>
-                        <stop offset="100%" stop-color="#FFA500"/>
-                    </radialGradient>
-                </defs>
-                <g>
-                    <circle cx="50" cy="50" r="40" fill="url(#happyGradient)"/>
-                    <circle cx="35" cy="40" r="5" fill="#000">
-                        <animate attributeName="cy" values="40;38;40" dur="2s" repeatCount="indefinite"/>
-                    </circle>
-                    <circle cx="65" cy="40" r="5" fill="#000">
-                        <animate attributeName="cy" values="40;38;40" dur="2s" repeatCount="indefinite"/>
-                    </circle>
-                    <path d="M 30 60 Q 50 75 70 60" stroke="#000" stroke-width="3" fill="none"/>
-                </g>
-            `,
-            eating: `
-                <defs>
-                    <radialGradient id="eatingGradient">
-                        <stop offset="0%" stop-color="#98FB98"/>
-                        <stop offset="100%" stop-color="#90EE90"/>
-                    </radialGradient>
-                </defs>
-                <g>
-                    <circle cx="50" cy="50" r="40" fill="url(#eatingGradient)"/>
-                    <circle cx="35" cy="40" r="5" fill="#000"/>
-                    <circle cx="65" cy="40" r="5" fill="#000"/>
-                    <path d="M 30 60 Q 50 85 70 60" stroke="#000" stroke-width="3" fill="#FF9999">
-                        <animate attributeName="d" 
-                            values="M 30 60 Q 50 85 70 60;M 30 60 Q 50 65 70 60;M 30 60 Q 50 85 70 60" 
-                            dur="0.5s" 
-                            repeatCount="indefinite"/>
-                    </path>
-                </g>
-                <g>
-                    <circle cx="25" cy="70" r="2" fill="#FFD700">
-                        <animate attributeName="cy" values="70;60;70" dur="1s" repeatCount="indefinite"/>
-                    </circle>
-                    <circle cx="75" cy="70" r="2" fill="#FFD700">
-                        <animate attributeName="cy" values="70;60;70" dur="1s" repeatCount="indefinite" begin="0.5s"/>
-                    </circle>
-                </g>
-            `,
-            showering: `
-                <defs>
-                    <radialGradient id="showerGradient">
-                        <stop offset="0%" stop-color="#B0E0E6"/>
-                        <stop offset="100%" stop-color="#87CEEB"/>
-                    </radialGradient>
-                </defs>
-                <g>
-                    <circle cx="50" cy="50" r="40" fill="url(#showerGradient)"/>
-                    <circle cx="35" cy="40" r="5" fill="#000"/>
-                    <circle cx="65" cy="40" r="5" fill="#000"/>
-                    <path d="M 30 60 Q 50 70 70 60" stroke="#000" stroke-width="3" fill="none"/>
-                </g>
-                <g>
-                    <path d="M 20 20 L 25 30" stroke="#87CEEB" stroke-width="2">
-                        <animate attributeName="opacity" values="0;1;0" dur="0.3s" repeatCount="indefinite"/>
-                    </path>
-                    <path d="M 70 20 L 75 30" stroke="#87CEEB" stroke-width="2">
-                        <animate attributeName="opacity" values="0;1;0" dur="0.3s" repeatCount="indefinite" begin="0.1s"/>
-                    </path>
-                    <path d="M 45 10 L 50 20" stroke="#87CEEB" stroke-width="2">
-                        <animate attributeName="opacity" values="0;1;0" dur="0.3s" repeatCount="indefinite" begin="0.2s"/>
-                    </path>
-                </g>
-            `,
-            sad: `
-                <defs>
-                    <radialGradient id="sadGradient">
-                        <stop offset="0%" stop-color="#CD5C5C"/>
-                        <stop offset="100%" stop-color="#8B0000"/>
-                    </radialGradient>
-                </defs>
-                <g>
-                    <circle cx="50" cy="50" r="40" fill="url(#sadGradient)"/>
-                    <path d="M 30 45 Q 35 50 40 45" stroke="#000" stroke-width="3" fill="none"/>
-                    <path d="M 60 45 Q 65 50 70 45" stroke="#000" stroke-width="3" fill="none"/>
-                    <path d="M 30 70 Q 50 60 70 70" stroke="#000" stroke-width="3" fill="none"/>
-                </g>
-                <g>
-                    <path d="M 35 35 L 40 40" stroke="#4169E1" stroke-width="2">
-                        <animate attributeName="opacity" values="1;0" dur="2s" repeatCount="indefinite"/>
-                    </path>
-                    <path d="M 65 35 L 70 40" stroke="#4169E1" stroke-width="2">
-                        <animate attributeName="opacity" values="1;0" dur="2s" repeatCount="indefinite" begin="1s"/>
-                    </path>
-                </g>
-            `,
-            dead: `
-                <defs>
-                    <radialGradient id="deadGradient">
-                        <stop offset="0%" stop-color="#696969"/>
-                        <stop offset="100%" stop-color="#4A4A4A"/>
-                    </radialGradient>
-                </defs>
-                <g>
-                    <circle cx="50" cy="50" r="40" fill="url(#deadGradient)"/>
-                    <path d="M 30 40 L 40 50 L 30 60" stroke="#000" stroke-width="3" fill="none"/>
-                    <path d="M 70 40 L 60 50 L 70 60" stroke="#000" stroke-width="3" fill="none"/>
-                    <path d="M 30 70 Q 50 60 70 70" stroke="#000" stroke-width="3" fill="none"/>
-                </g>
-                <g opacity="0.5">
-                    <path d="M 45 20 Q 50 15 55 20 Q 60 25 55 30 Q 50 35 45 30 Z" fill="#FFF">
-                        <animate attributeName="transform" 
-                            type="translate" 
-                            values="0,0; 0,-10; 0,0" 
-                            dur="3s" 
-                            repeatCount="indefinite"/>
-                    </path>
-                </g>
-            `,
-            overfed: `
-                <defs>
-                    <radialGradient id="overfedGradient">
-                        <stop offset="0%" stop-color="#98FB98"/>
-                        <stop offset="100%" stop-color="#90EE90"/>
-                    </radialGradient>
-                </defs>
-                <g>
-                    <circle cx="50" cy="50" r="45" fill="url(#overfedGradient)"/>
-                    <path d="M 30 45 Q 35 50 40 45" stroke="#000" stroke-width="3" fill="none"/>
-                    <path d="M 60 45 Q 65 50 70 45" stroke="#000"
-</defs>
-<g class="tama-body">
-    <circle cx="50" cy="50" r="45" fill="url(#overfedGradient)"/>
-    <path d="M 30 45 Q 35 50 40 45" stroke="#000" stroke-width="3" fill="none"/>
-    <path d="M 60 45 Q 65 50 70 45" stroke="#000" stroke-width="3" fill="none"/>
-    <path d="M 30 70 Q 50 85 70 70" stroke="#000" stroke-width="3" fill="#FF9999"/>
-</g>
-<g>
-    <circle cx="25" cy="40" r="2" fill="#87CEEB">
-        <animate attributeName="cy" values="40;45;40" dur="1s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="75" cy="40" r="2" fill="#87CEEB">
-        <animate attributeName="cy" values="40;45;40" dur="1s" repeatCount="indefinite" begin="0.5s"/>
-    </circle>
-</g>
-            `,
-            ok: `
-                <defs>
-                    <radialGradient id="okGradient">
-                        <stop offset="0%" stop-color="#FFA500"/>
-                        <stop offset="100%" stop-color="#FF8C00"/>
-                    </radialGradient>
-                </defs>
-                <g>
-                    <circle cx="50" cy="50" r="40" fill="url(#okGradient)"/>
-                    <circle cx="35" cy="40" r="5" fill="#000"/>
-                    <circle cx="65" cy="40" r="5" fill="#000"/>
-                    <path d="M 30 60 Q 50 65 70 60" stroke="#000" stroke-width="3" fill="none"/>
-                </g>
-            `,
-            bad: `
-                <defs>
-                    <radialGradient id="badGradient">
-                        <stop offset="0%" stop-color="#FF6B6B"/>
-                        <stop offset="100%" stop-color="#FF4444"/>
-                    </radialGradient>
-                </defs>
-                <g>
-                    <circle cx="50" cy="50" r="40" fill="url(#badGradient)"/>
-                    <circle cx="35" cy="40" r="5" fill="#000"/>
-                    <circle cx="65" cy="40" r="5" fill="#000"/>
-                    <path d="M 30 65 Q 50 60 70 65" stroke="#000" stroke-width="3" fill="none"/>
-                </g>
-            `
-        };
-stroke-width="3" fill="none"/>
-                    <path d="M 30 70 Q 50 85 70 70" stroke="#000" stroke-width="3" fill="#FF9999"/>
-                </g>
-                <g>
-                    <circle cx="25" cy="40" r="2" fill="#87CEEB">
-                        <animate attributeName="cy" values="40;45;40" dur="1s" repeatCount="indefinite"/>
-                    </circle>
-                    <circle cx="75" cy="40" r="2" fill="#87CEEB">
-                        <animate attributeName="cy" values="40;45;40" dur="1s" repeatCount="indefinite" begin="0.5s"/>
-                    </circle>
-                </g>
-            `,
-            ok: `
-                <defs>
-                    <radialGradient id="okGradient">
-                        <stop offset="0%" stop-color="#FFA500"/>
-                        <stop offset="100%" stop-color="#FF8C00"/>
-                    </radialGradient>
-                </defs>
-                <g>
-                    <circle cx="50" cy="50" r="40" fill="url(#okGradient)"/>
-                    <circle cx="35" cy="40" r="5" fill="#000"/>
-                    <circle cx="65" cy="40" r="5" fill="#000"/>
-                    <path d="M 30 60 Q 50 65 70 60" stroke="#000" stroke-width="3" fill="none"/>
-                </g>
-            `,
-            bad: `
-                <defs>
-                    <radialGradient id="badGradient">
-                        <stop offset="0%" stop-color="#FF6B6B"/>
-                        <stop offset="100%" stop-color="#FF4444"/>
-                    </radialGradient>
-                </defs>
-                <g>
-                    <circle cx="50" cy="50" r="40" fill="url(#badGradient)"/>
-                    <circle cx="35" cy="40" r="5" fill="#000"/>
-                    <circle cx="65" cy="40" r="5" fill="#000"/>
-                    <path d="M 30 65 Q 50 60 70 65" stroke="#000" stroke-width="3" fill="none"/>
-                </g>
-            `
-        };
+        function updateStats() {
+            healthText.textContent = health;
+            expText.textContent = exp;
+            levelText.textContent = level;
+        }
 
-        function updateUI() {
-            const healthBar = document.getElementById('healthBar');
-            const expBar = document.getElementById('expBar');
-            const healthText = document.getElementById('healthText');
-            const levelText = document.getElementById('levelText');
-            const expText = document.getElementById('expText');
-            const expNeededText = document.getElementById('expNeededText');
-            const tamaImage = document.getElementById('tamaImage');
-            const description = document.getElementById('description');
-            const feedButton = document.getElementById('feedButton');
-            const showerButton = document.getElementById('showerButton');
-
-            healthBar.style.width = `${state.health}%`;
-            healthText.textContent = Math.round(state.health);
-            
-            const expPercentage = (state.experience / state.experienceToNextLevel) * 100;
-            expBar.style.width = `${expPercentage}%`;
-            
-            levelText.textContent = state.level;
-            expText.textContent = state.experience;
-            expNeededText.textContent = state.experienceToNextLevel;
-
-            let currentState = 'happy';
-            let desc = 'Je vais bien ! 😊';
-
-            if (state.isDead) {
-                currentState = 'dead';
-                desc = 'Je suis mort... 💀';
-            } else if (state.isShowering) {
-                currentState = 'showering';
-                desc = 'Je me lave ! 🚿';
-            } else if (state.overfeedCount > 0) {
-                currentState = 'overfed';
-                desc = 'Je suis trop nourri! 🤢';
-            } else if (state.health <= 20) {
-                currentState = 'sad';
-                desc = 'Je suis très triste... 😢';
-            } else if (state.health <= 50) {
-                currentState = 'bad';
-                desc = 'J\'ai vraiment faim... 😟';
+        function gainExp(amount) {
+            exp += amount;
+            if (exp >= expNeeded) {
+                level++;
+                exp -= expNeeded;
+                expNeededText.textContent = expNeeded * level;
             }
-
-            tamaImage.innerHTML = svgStates[currentState];
-            tamaImage.className = `tama-svg ${currentState}`;
-            description.textContent = desc;
-
-            feedButton.disabled = state.isDead || state.isShowering;
-            showerButton.disabled = !canShower() || state.isDead || state.isShowering;
+            updateStats();
         }
 
-        function feed() {
-            if (state.isDead || state.isShowering) return;
-
-            if (state.health >= 100) {
-                state.overfeedCount++;
-                if (state.overfeedCount >= OVERFEED_LIMIT) {
-                    state.isDead = true;
-                    state.health = 0;
-                }
-            } else {
-                state.health = Math.min(100, state.health + 20);
-                state.overfeedCount = 0;
-                if (state.health < 100) {
-                    addExperience(XP_GAIN);
-                }
+        feedButton.addEventListener('click', () => {
+            if (health < 100) {
+                health = Math.min(health + 10, 100);
+                tamaImage.src = tamaStates.feed;
+                setTimeout(() => tamaImage.src = tamaStates.ok, 2000);
+                gainExp(5);
             }
+            updateStats();
+        });
 
-            state.lastFed = Date.now();
-            updateUI();
-        }
+        cleanButton.addEventListener('click', () => {
+            tamaImage.src = tamaStates.douche;
+            setTimeout(() => tamaImage.src = tamaStates.happy, 2000);
+            gainExp(10);
+            updateStats();
+        });
 
-        function canShower() {
-            if (!state.lastShowerDate) return true;
-            const lastShower = new Date(state.lastShowerDate);
-            const now = new Date();
-            return lastShower.getDate() !== now.getDate() || 
-                   lastShower.getMonth() !== now.getMonth() ||
-                   lastShower.getFullYear() !== now.getFullYear();
-        }
+        saveButton.addEventListener('click', () => {
+            localStorage.setItem('tamaHealth', health);
+            localStorage.setItem('tamaExp', exp);
+            localStorage.setItem('tamaLevel', level);
+        });
 
-        function shower() {
-            if (!canShower() || state.isDead || state.isShowering) return;
-
-            state.isShowering = true;
-            updateUI();
-
-            setTimeout(() => {
-                state.isShowering = false;
-                state.lastShowerDate = new Date().toISOString();
-                addExperience(XP_GAIN * SHOWER_XP_MULTIPLIER);
-                updateUI();
-            }, 3000);
-        }
-
-        function addExperience(amount) {
-            state.experience += amount;
-            if (state.experience >= state.experienceToNextLevel) {
-                state.level++;
-                state.experience -= state.experienceToNextLevel;
-                state.experienceToNextLevel = Math.floor(100 * Math.pow(1.5, state.level - 1));
-            }
-        }
-
-        setInterval(() => {
-            if (!state.isDead && !state.isShowering) {
-                const hoursSinceLastFed = (Date.now() - state.lastFed) / (1000 * 60 * 60);
-                let decrease = 0;
-
-                if (hoursSinceLastFed >= 72) {
-                    decrease = 0.5;
-                } else if (hoursSinceLastFed >= 48) {
-                    decrease = 0.3;
-                } else if (hoursSinceLastFed >= 24) {
-                    decrease = 0.2;
-                } else if (hoursSinceLastFed >= 12) {
-                    decrease = 0.1;
-                }
-
-                state.health = Math.max(0, state.health - decrease);
-                if (state.health <= 0) {
-                    state.isDead = true;
-                }
-                updateUI();
-            }
-        }, 1000);
-
-        const savedState = localStorage.getItem('tamagotchiState');
-        if (savedState) {
-            Object.assign(state, JSON.parse(savedState));
-        }
-
-        setInterval(() => {
-            localStorage.setItem('tamagotchiState', JSON.stringify(state));
-        }, 1000);
-
-        updateUI();
+        loadButton.addEventListener('click', () => {
+            health = parseInt(localStorage.getItem('tamaHealth')) || 100;
+            exp = parseInt(localStorage.getItem('tamaExp')) || 0;
+            level = parseInt(localStorage.getItem('tamaLevel')) || 1;
+            updateStats();
+        });
     </script>
 </body>
 </html>
