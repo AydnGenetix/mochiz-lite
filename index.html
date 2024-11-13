@@ -5,16 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tamagotchi Light</title>
     <style>
-        @font-face {
-            font-family: 'earlygameboy';
-            src: url('data:font/truetype;charset=utf-8;base64,/* ici on mettra la font convertie en base64 */') format('truetype');
-        }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'earlygameboy', sans-serif;
         }
 
         body {
@@ -24,6 +18,7 @@
             align-items: center;
             min-height: 100vh;
             color: white;
+            font-family: Arial, sans-serif;
         }
 
         .container {
@@ -32,12 +27,14 @@
             padding: 20px;
             border-radius: 15px;
             text-align: center;
+            backdrop-filter: blur(10px);
         }
 
-        .tama-image {
+        .tama-container {
             width: 120px;
             height: 120px;
             margin: 10px auto;
+            position: relative;
         }
 
         .status-bar {
@@ -76,7 +73,8 @@
             background: #ff4081;
             color: white;
             cursor: pointer;
-            transition: opacity 0.3s;
+            transition: all 0.3s ease;
+            font-weight: bold;
         }
 
         button:disabled {
@@ -84,24 +82,68 @@
             cursor: not-allowed;
         }
 
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(255, 64, 129, 0.4);
+        }
+
         .shower-button {
             background: #00bcd4;
         }
 
+        .shower-button:hover:not(:disabled) {
+            box-shadow: 0 2px 8px rgba(0, 188, 212, 0.4);
+        }
+
         .stats {
-            font-size: 12px;
+            font-size: 14px;
             margin: 10px 0;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
         }
 
         .description {
-            font-size: 14px;
+            font-size: 16px;
             margin: 10px 0;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
         }
+
+        /* Animation du Tamagotchi */
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .tama-svg {
+            width: 100%;
+            height: 100%;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        .tama-svg.eating { animation: shake 0.5s ease-in-out infinite; }
+        .tama-svg.showering { animation: spin 2s linear infinite; }
+        .tama-svg.sad { animation: bounce 4s ease-in-out infinite; }
+        .tama-svg.dead { animation: none; }
     </style>
 </head>
 <body>
     <div class="container">
-        <img src="https://github.com/AydnGenetix/mochiz-lite/blob/main/images/1.gif?raw=true" alt="Tamagotchi" class="tama-image" id="tamaImage">
+        <div class="tama-container">
+            <svg id="tamaImage" class="tama-svg" viewBox="0 0 100 100">
+                <!-- Le SVG sera mis à jour par JavaScript -->
+            </svg>
+        </div>
         <div class="description" id="description">Je vais bien ! 😊</div>
         
         <div class="stats">
@@ -142,19 +184,57 @@
         const XP_GAIN = 20;
         const SHOWER_XP_MULTIPLIER = 2;
 
-const baseUrl = 'https://aydngenetix.github.io/mochiz-lite';
-
-const images = {
-    happy: 'https://github.com/AydnGenetix/mochiz-lite/blob/main/images/5.gif?raw=true',
-    ok: 'https://github.com/AydnGenetix/mochiz-lite/blob/main/images/4.gif?raw=true',
-    bad: 'https://github.com/AydnGenetix/mochiz-lite/blob/main/images/2.gif?raw=true',
-    sad: 'https://github.com/AydnGenetix/mochiz-lite/blob/main/images/1.gif?raw=true',
-    dead: 'https://github.com/AydnGenetix/mochiz-lite/blob/main/images/7.gif?raw=true',
-    eating: 'https://github.com/AydnGenetix/mochiz-lite/blob/main/images/3.gif?raw=true',
-    overfed: 'https://github.com/AydnGenetix/mochiz-lite/blob/main/images/9.gif?raw=true',
-    showering: 'https://github.com/AydnGenetix/mochiz-lite/blob/main/images/8.gif?raw=true'
-};
-
+        const svgStates = {
+            happy: `
+                <circle cx="50" cy="50" r="40" fill="#FFD700"/>
+                <circle cx="35" cy="40" r="5" fill="#000"/>
+                <circle cx="65" cy="40" r="5" fill="#000"/>
+                <path d="M 30 60 Q 50 70 70 60" stroke="#000" stroke-width="3" fill="none"/>
+            `,
+            ok: `
+                <circle cx="50" cy="50" r="40" fill="#FFA500"/>
+                <circle cx="35" cy="40" r="5" fill="#000"/>
+                <circle cx="65" cy="40" r="5" fill="#000"/>
+                <path d="M 30 60 Q 50 65 70 60" stroke="#000" stroke-width="3" fill="none"/>
+            `,
+            bad: `
+                <circle cx="50" cy="50" r="40" fill="#FF6B6B"/>
+                <circle cx="35" cy="40" r="5" fill="#000"/>
+                <circle cx="65" cy="40" r="5" fill="#000"/>
+                <path d="M 30 65 Q 50 60 70 65" stroke="#000" stroke-width="3" fill="none"/>
+            `,
+            sad: `
+                <circle cx="50" cy="50" r="40" fill="#8B0000"/>
+                <circle cx="35" cy="45" r="5" fill="#000"/>
+                <circle cx="65" cy="45" r="5" fill="#000"/>
+                <path d="M 30 70 Q 50 60 70 70" stroke="#000" stroke-width="3" fill="none"/>
+            `,
+            dead: `
+                <circle cx="50" cy="50" r="40" fill="#4A4A4A"/>
+                <path d="M 30 40 L 40 50 L 30 60" stroke="#000" stroke-width="3" fill="none"/>
+                <path d="M 70 40 L 60 50 L 70 60" stroke="#000" stroke-width="3" fill="none"/>
+                <path d="M 30 70 Q 50 60 70 70" stroke="#000" stroke-width="3" fill="none"/>
+            `,
+            eating: `
+                <circle cx="50" cy="50" r="40" fill="#90EE90"/>
+                <circle cx="35" cy="40" r="5" fill="#000"/>
+                <circle cx="65" cy="40" r="5" fill="#000"/>
+                <path d="M 30 60 Q 50 80 70 60" stroke="#000" stroke-width="3" fill="none"/>
+            `,
+            overfed: `
+                <circle cx="50" cy="50" r="40" fill="#98FB98"/>
+                <circle cx="35" cy="45" r="5" fill="#000"/>
+                <circle cx="65" cy="45" r="5" fill="#000"/>
+                <path d="M 30 70 Q 50 85 70 70" stroke="#000" stroke-width="3" fill="none"/>
+            `,
+            showering: `
+                <circle cx="50" cy="50" r="40" fill="#87CEEB"/>
+                <circle cx="35" cy="40" r="5" fill="#000"/>
+                <circle cx="65" cy="40" r="5" fill="#000"/>
+                <path d="M 30 60 Q 50 70 70 60" stroke="#000" stroke-width="3" fill="none"/>
+                <path d="M 20 20 L 30 30 M 70 20 L 80 30 M 45 10 L 55 20" stroke="#00F" stroke-width="2"/>
+            `
+        };
 
         function updateUI() {
             const healthBar = document.getElementById('healthBar');
@@ -176,7 +256,7 @@ const images = {
             expText.textContent = state.experience;
             expNeededText.textContent = state.experienceToNextLevel;
 
-            // Mise à jour de l'image et de la description
+            // Mise à jour du SVG et de la description
             let currentState = 'happy';
             let desc = 'Je vais bien ! 😊';
 
@@ -197,7 +277,8 @@ const images = {
                 desc = 'J\'ai vraiment faim... 😟';
             }
 
-            tamaImage.src = images[currentState];
+            tamaImage.innerHTML = svgStates[currentState];
+            tamaImage.className = `tama-svg ${currentState}`;
             description.textContent = desc;
         }
 
@@ -213,7 +294,6 @@ const images = {
             } else {
                 state.health = Math.min(100, state.health + 20);
                 state.overfeedCount = 0;
-                // N'ajoute de l'expérience que si la santé n'est pas à 100%
                 if (state.health < 100) {
                     addExperience(XP_GAIN);
                 }
@@ -255,7 +335,7 @@ const images = {
             }
         }
 
-        // Diminution de la santé au fil du temps
+        // Diminution de la santé
         setInterval(() => {
             if (!state.isDead) {
                 const hoursSinceLastFed = (Date.now() - state.lastFed) / (1000 * 60 * 60);
@@ -279,18 +359,16 @@ const images = {
             }
         }, 1000);
 
-        // Charger l'état sauvegardé au démarrage
+        // Chargement et sauvegarde
         const savedState = localStorage.getItem('tamagotchiState');
         if (savedState) {
             Object.assign(state, JSON.parse(savedState));
         }
 
-        // Sauvegarder l'état périodiquement
         setInterval(() => {
             localStorage.setItem('tamagotchiState', JSON.stringify(state));
         }, 1000);
 
-        // Mise à jour initiale de l'UI
         updateUI();
     </script>
 </body>
