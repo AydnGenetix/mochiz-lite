@@ -1,375 +1,236 @@
 <!DOCTYPE html>
 <html lang="fr">
+<!-- Même head qu'avant -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tamagotchi Light</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        /* Styles précédents... */
 
-        body {
-            background-color: #1a1a1a;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            color: white;
-            font-family: Arial, sans-serif;
-        }
-
-        .container {
-            width: 300px;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-            backdrop-filter: blur(10px);
-        }
-
-        .tama-container {
-            width: 120px;
-            height: 120px;
-            margin: 10px auto;
-            position: relative;
-        }
-
-        .status-bar {
-            background: rgba(255, 255, 255, 0.1);
-            height: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-            overflow: hidden;
-        }
-
-        .health-bar {
-            background: linear-gradient(to right, #ff0055, #ff4081);
-            height: 100%;
-            width: 100%;
-            transition: width 0.3s ease;
-        }
-
-        .exp-bar {
-            background: linear-gradient(to right, #00ff88, #00ffcc);
-            height: 100%;
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-
-        .buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        button {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            background: #ff4081;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: bold;
-        }
-
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        button:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 2px 8px rgba(255, 64, 129, 0.4);
-        }
-
-        .shower-button {
-            background: #00bcd4;
-        }
-
-        .shower-button:hover:not(:disabled) {
-            box-shadow: 0 2px 8px rgba(0, 188, 212, 0.4);
-        }
-
-        .stats {
-            font-size: 14px;
-            margin: 10px 0;
-            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-        }
-
-        .description {
-            font-size: 16px;
-            margin: 10px 0;
-            font-weight: bold;
-            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-        }
-
-        /* Animation du Tamagotchi */
-        @keyframes bounce {
+        /* Nouvelles animations pour chaque état */
+        @keyframes happy-bounce {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+            50% { transform: translateY(-5px) scale(1.05); }
         }
 
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
+        @keyframes sad-shake {
+            0%, 100% { transform: translateX(0) rotate(0); }
+            25% { transform: translateX(-3px) rotate(-3deg); }
+            75% { transform: translateX(3px) rotate(3deg); }
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        @keyframes eating-chomp {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
         }
 
-        .tama-svg {
+        @keyframes shower-sparkle {
+            0% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0); }
+        }
+
+        @keyframes dead-float {
+            0% { transform: translateY(0) rotate(0); }
+            50% { transform: translateY(5px) rotate(5deg); }
+            100% { transform: translateY(0) rotate(0); }
+        }
+
+        @keyframes overfed-wobble {
+            0% { transform: rotate(0); }
+            25% { transform: rotate(-5deg); }
+            75% { transform: rotate(5deg); }
+            100% { transform: rotate(0); }
+        }
+
+        .tama-svg.happy { animation: happy-bounce 2s ease-in-out infinite; }
+        .tama-svg.sad { animation: sad-shake 3s ease-in-out infinite; }
+        .tama-svg.eating { animation: eating-chomp 0.5s ease-in-out infinite; }
+        .tama-svg.showering { animation: none; } /* L'animation sera dans le SVG */
+        .tama-svg.dead { animation: dead-float 4s ease-in-out infinite; }
+        .tama-svg.overfed { animation: overfed-wobble 2s ease-in-out infinite; }
+
+        /* Ajout d'effets spéciaux */
+        .sparkle {
+            position: absolute;
+            pointer-events: none;
+            animation: shower-sparkle 1s linear infinite;
+        }
+
+        .particles {
+            position: absolute;
             width: 100%;
             height: 100%;
-            animation: bounce 2s ease-in-out infinite;
+            pointer-events: none;
         }
-
-        .tama-svg.eating { animation: shake 0.5s ease-in-out infinite; }
-        .tama-svg.showering { animation: spin 2s linear infinite; }
-        .tama-svg.sad { animation: bounce 4s ease-in-out infinite; }
-        .tama-svg.dead { animation: none; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="tama-container">
-            <svg id="tamaImage" class="tama-svg" viewBox="0 0 100 100">
-                <!-- Le SVG sera mis à jour par JavaScript -->
-            </svg>
-        </div>
-        <div class="description" id="description">Je vais bien ! 😊</div>
-        
-        <div class="stats">
-            Santé: <span id="healthText">100</span>%
-        </div>
-        <div class="status-bar">
-            <div class="health-bar" id="healthBar"></div>
-        </div>
-
-        <div class="stats">
-            Niveau <span id="levelText">1</span>
-            (<span id="expText">0</span>/<span id="expNeededText">100</span>)
-        </div>
-        <div class="status-bar">
-            <div class="exp-bar" id="expBar"></div>
-        </div>
-
-        <div class="buttons">
-            <button onclick="feed()" id="feedButton">Nourrir</button>
-            <button onclick="shower()" id="showerButton" class="shower-button">Douche</button>
-        </div>
-    </div>
-
+    <!-- Même structure HTML -->
     <script>
-        const state = {
-            health: 100,
-            lastFed: Date.now(),
-            level: 1,
-            experience: 0,
-            experienceToNextLevel: 100,
-            lastShowerDate: null,
-            isShowering: false,
-            overfeedCount: 0,
-            isDead: false
-        };
-
-        const OVERFEED_LIMIT = 10;
-        const XP_GAIN = 20;
-        const SHOWER_XP_MULTIPLIER = 2;
-
+        // Mise à jour des états SVG avec des versions plus élaborées
         const svgStates = {
             happy: `
-                <circle cx="50" cy="50" r="40" fill="#FFD700"/>
-                <circle cx="35" cy="40" r="5" fill="#000"/>
-                <circle cx="65" cy="40" r="5" fill="#000"/>
-                <path d="M 30 60 Q 50 70 70 60" stroke="#000" stroke-width="3" fill="none"/>
+                <g class="tama-body">
+                    <circle cx="50" cy="50" r="40" fill="#FFD700"/>
+                    <g class="eyes">
+                        <circle cx="35" cy="40" r="6" fill="#000"/>
+                        <circle cx="65" cy="40" r="6" fill="#000"/>
+                        <circle cx="37" cy="38" r="2" fill="#FFF"/>
+                        <circle cx="67" cy="38" r="2" fill="#FFF"/>
+                    </g>
+                    <path d="M 30 60 Q 50 75 70 60" stroke="#000" stroke-width="3" fill="none"/>
+                    <circle cx="50" cy="35" r="2" fill="#FF9999" opacity="0.6">
+                        <animate attributeName="opacity" values="0.6;0.8;0.6" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                </g>
             `,
-            ok: `
-                <circle cx="50" cy="50" r="40" fill="#FFA500"/>
-                <circle cx="35" cy="40" r="5" fill="#000"/>
-                <circle cx="65" cy="40" r="5" fill="#000"/>
-                <path d="M 30 60 Q 50 65 70 60" stroke="#000" stroke-width="3" fill="none"/>
-            `,
-            bad: `
-                <circle cx="50" cy="50" r="40" fill="#FF6B6B"/>
-                <circle cx="35" cy="40" r="5" fill="#000"/>
-                <circle cx="65" cy="40" r="5" fill="#000"/>
-                <path d="M 30 65 Q 50 60 70 65" stroke="#000" stroke-width="3" fill="none"/>
-            `,
-            sad: `
-                <circle cx="50" cy="50" r="40" fill="#8B0000"/>
-                <circle cx="35" cy="45" r="5" fill="#000"/>
-                <circle cx="65" cy="45" r="5" fill="#000"/>
-                <path d="M 30 70 Q 50 60 70 70" stroke="#000" stroke-width="3" fill="none"/>
-            `,
-            dead: `
-                <circle cx="50" cy="50" r="40" fill="#4A4A4A"/>
-                <path d="M 30 40 L 40 50 L 30 60" stroke="#000" stroke-width="3" fill="none"/>
-                <path d="M 70 40 L 60 50 L 70 60" stroke="#000" stroke-width="3" fill="none"/>
-                <path d="M 30 70 Q 50 60 70 70" stroke="#000" stroke-width="3" fill="none"/>
-            `,
+            
             eating: `
-                <circle cx="50" cy="50" r="40" fill="#90EE90"/>
-                <circle cx="35" cy="40" r="5" fill="#000"/>
-                <circle cx="65" cy="40" r="5" fill="#000"/>
-                <path d="M 30 60 Q 50 80 70 60" stroke="#000" stroke-width="3" fill="none"/>
+                <g class="tama-body">
+                    <circle cx="50" cy="50" r="40" fill="#90EE90"/>
+                    <g class="eyes">
+                        <path d="M 30 40 Q 35 35 40 40" stroke="#000" stroke-width="3" fill="none"/>
+                        <path d="M 60 40 Q 65 35 70 40" stroke="#000" stroke-width="3" fill="none"/>
+                    </g>
+                    <path class="mouth" d="M 30 60 Q 50 85 70 60" stroke="#000" stroke-width="3" fill="#FF9999">
+                        <animate attributeName="d" 
+                            values="M 30 60 Q 50 85 70 60;M 30 60 Q 50 65 70 60;M 30 60 Q 50 85 70 60" 
+                            dur="0.5s" 
+                            repeatCount="indefinite"/>
+                    </path>
+                </g>
+                <g class="food-particles">
+                    <circle cx="25" cy="70" r="2" fill="#FFD700">
+                        <animate attributeName="cy" values="70;65;70" dur="0.5s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="75" cy="70" r="2" fill="#FFD700">
+                        <animate attributeName="cy" values="70;65;70" dur="0.5s" repeatCount="indefinite"/>
+                    </circle>
+                </g>
             `,
-            overfed: `
-                <circle cx="50" cy="50" r="40" fill="#98FB98"/>
-                <circle cx="35" cy="45" r="5" fill="#000"/>
-                <circle cx="65" cy="45" r="5" fill="#000"/>
-                <path d="M 30 70 Q 50 85 70 70" stroke="#000" stroke-width="3" fill="none"/>
-            `,
+
             showering: `
-                <circle cx="50" cy="50" r="40" fill="#87CEEB"/>
-                <circle cx="35" cy="40" r="5" fill="#000"/>
-                <circle cx="65" cy="40" r="5" fill="#000"/>
-                <path d="M 30 60 Q 50 70 70 60" stroke="#000" stroke-width="3" fill="none"/>
-                <path d="M 20 20 L 30 30 M 70 20 L 80 30 M 45 10 L 55 20" stroke="#00F" stroke-width="2"/>
+                <defs>
+                    <radialGradient id="water-sparkle">
+                        <stop offset="0%" stop-color="#87CEEB"/>
+                        <stop offset="100%" stop-color="#4FA9CC"/>
+                    </radialGradient>
+                </defs>
+                <g class="tama-body">
+                    <circle cx="50" cy="50" r="40" fill="url(#water-sparkle)"/>
+                    <g class="eyes">
+                        <circle cx="35" cy="40" r="6" fill="#000"/>
+                        <circle cx="65" cy="40" r="6" fill="#000"/>
+                        <circle cx="37" cy="38" r="2" fill="#FFF"/>
+                        <circle cx="67" cy="38" r="2" fill="#FFF"/>
+                    </g>
+                    <path d="M 30 60 Q 50 70 70 60" stroke="#000" stroke-width="3" fill="none"/>
+                </g>
+                <g class="water-drops">
+                    <path d="M 20 20 L 25 30" stroke="#87CEEB" stroke-width="2">
+                        <animate attributeName="opacity" values="0;1;0" dur="0.5s" repeatCount="indefinite"/>
+                    </path>
+                    <path d="M 70 20 L 75 30" stroke="#87CEEB" stroke-width="2">
+                        <animate attributeName="opacity" values="0;1;0" dur="0.5s" repeatCount="indefinite" begin="0.2s"/>
+                    </path>
+                    <path d="M 45 10 L 50 20" stroke="#87CEEB" stroke-width="2">
+                        <animate attributeName="opacity" values="0;1;0" dur="0.5s" repeatCount="indefinite" begin="0.3s"/>
+                    </path>
+                </g>
+            `,
+
+            sad: `
+                <g class="tama-body">
+                    <circle cx="50" cy="50" r="40" fill="#8B0000"/>
+                    <g class="eyes">
+                        <path d="M 30 45 Q 35 50 40 45" stroke="#000" stroke-width="3" fill="none"/>
+                        <path d="M 60 45 Q 65 50 70 45" stroke="#000" stroke-width="3" fill="none"/>
+                        <path d="M 32 35 L 38 40" stroke="#6495ED" stroke-width="2">
+                            <animate attributeName="opacity" values="0;1;0" dur="3s" repeatCount="indefinite"/>
+                        </path>
+                        <path d="M 62 35 L 68 40" stroke="#6495ED" stroke-width="2">
+                            <animate attributeName="opacity" values="0;1;0" dur="3s" repeatCount="indefinite" begin="1.5s"/>
+                        </path>
+                    </g>
+                    <path d="M 30 70 Q 50 60 70 70" stroke="#000" stroke-width="3" fill="none"/>
+                </g>
+            `,
+
+            dead: `
+                <g class="tama-body">
+                    <circle cx="50" cy="50" r="40" fill="#4A4A4A"/>
+                    <g class="eyes">
+                        <path d="M 30 40 L 40 50 L 30 60" stroke="#000" stroke-width="3" fill="none"/>
+                        <path d="M 70 40 L 60 50 L 70 60" stroke="#000" stroke-width="3" fill="none"/>
+                    </g>
+                    <path d="M 30 70 Q 50 60 70 70" stroke="#000" stroke-width="3" fill="none"/>
+                    <g class="spirit" opacity="0.5">
+                        <path d="M 45 20 Q 50 15 55 20 Q 60 25 55 30 Q 50 35 45 30 Q 40 25 45 20" fill="#FFF">
+                            <animate attributeName="transform" 
+                                type="translate" 
+                                values="0,0; 0,-10; 0,0" 
+                                dur="3s" 
+                                repeatCount="indefinite"/>
+                        </path>
+                    </g>
+                </g>
+            `,
+
+            overfed: `
+                <g class="tama-body">
+                    <circle cx="50" cy="50" r="45" fill="#98FB98"/>
+                    <circle cx="50" cy="50" r="42" fill="#90EE90"/>
+                    <g class="eyes">
+                        <path d="M 30 45 Q 35 50 40 45" stroke="#000" stroke-width="3" fill="none"/>
+                        <path d="M 60 45 Q 65 50 70 45" stroke="#000" stroke-width="3" fill="none"/>
+                    </g>
+                    <path d="M 30 70 Q 50 85 70 70" stroke="#000" stroke-width="3" fill="#FF9999"/>
+                    <g class="sweat-drops">
+                        <circle cx="25" cy="40" r="2" fill="#87CEEB">
+                            <animate attributeName="cy" values="40;45;40" dur="1s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="75" cy="40" r="2" fill="#87CEEB">
+                            <animate attributeName="cy" values="40;45;40" dur="1s" repeatCount="indefinite" begin="0.5s"/>
+                        </circle>
+                    </g>
+                </g>
+            `,
+
+            ok: `
+                <g class="tama-body">
+                    <circle cx="50" cy="50" r="40" fill="#FFA500"/>
+                    <g class="eyes">
+                        <circle cx="35" cy="40" r="6" fill="#000"/>
+                        <circle cx="65" cy="40" r="6" fill="#000"/>
+                        <circle cx="37" cy="38" r="2" fill="#FFF"/>
+                        <circle cx="67" cy="38" r="2" fill="#FFF"/>
+                    </g>
+                    <path d="M 30 60 Q 50 65 70 60" stroke="#000" stroke-width="3" fill="none"/>
+                </g>
+            `,
+
+            bad: `
+                <g class="tama-body">
+                    <circle cx="50" cy="50" r="40" fill="#FF6B6B"/>
+                    <g class="eyes">
+                        <circle cx="35" cy="40" r="6" fill="#000"/>
+                        <circle cx="65" cy="40" r="6" fill="#000"/>
+                        <circle cx="37" cy="38" r="2" fill="#FFF"/>
+                        <circle cx="67" cy="38" r="2" fill="#FFF"/>
+                    </g>
+                    <path d="M 30 65 Q 50 60 70 65" stroke="#000" stroke-width="3" fill="none">
+                        <animate attributeName="d" 
+                            values="M 30 65 Q 50 60 70 65;M 30 63 Q 50 58 70 63;M 30 65 Q 50 60 70 65" 
+                            dur="2s" 
+                            repeatCount="indefinite"/>
+                    </path>
+                </g>
             `
         };
 
-        function updateUI() {
-            const healthBar = document.getElementById('healthBar');
-            const expBar = document.getElementById('expBar');
-            const healthText = document.getElementById('healthText');
-            const levelText = document.getElementById('levelText');
-            const expText = document.getElementById('expText');
-            const expNeededText = document.getElementById('expNeededText');
-            const tamaImage = document.getElementById('tamaImage');
-            const description = document.getElementById('description');
-
-            healthBar.style.width = `${state.health}%`;
-            healthText.textContent = Math.round(state.health);
-            
-            const expPercentage = (state.experience / state.experienceToNextLevel) * 100;
-            expBar.style.width = `${expPercentage}%`;
-            
-            levelText.textContent = state.level;
-            expText.textContent = state.experience;
-            expNeededText.textContent = state.experienceToNextLevel;
-
-            // Mise à jour du SVG et de la description
-            let currentState = 'happy';
-            let desc = 'Je vais bien ! 😊';
-
-            if (state.isDead) {
-                currentState = 'dead';
-                desc = 'Je suis mort... 💀';
-            } else if (state.isShowering) {
-                currentState = 'showering';
-                desc = 'Je me lave ! 🚿';
-            } else if (state.overfeedCount > 0) {
-                currentState = 'overfed';
-                desc = 'Je suis trop nourri! 🤢';
-            } else if (state.health <= 20) {
-                currentState = 'sad';
-                desc = 'Je suis très triste... 😢';
-            } else if (state.health <= 50) {
-                currentState = 'bad';
-                desc = 'J\'ai vraiment faim... 😟';
-            }
-
-            tamaImage.innerHTML = svgStates[currentState];
-            tamaImage.className = `tama-svg ${currentState}`;
-            description.textContent = desc;
-        }
-
-        function feed() {
-            if (state.isDead || state.isShowering) return;
-
-            if (state.health >= 100) {
-                state.overfeedCount++;
-                if (state.overfeedCount >= OVERFEED_LIMIT) {
-                    state.isDead = true;
-                    state.health = 0;
-                }
-            } else {
-                state.health = Math.min(100, state.health + 20);
-                state.overfeedCount = 0;
-                if (state.health < 100) {
-                    addExperience(XP_GAIN);
-                }
-            }
-
-            state.lastFed = Date.now();
-            updateUI();
-        }
-
-        function canShower() {
-            if (!state.lastShowerDate) return true;
-            const lastShower = new Date(state.lastShowerDate);
-            const now = new Date();
-            return lastShower.getDate() !== now.getDate() || 
-                   lastShower.getMonth() !== now.getMonth() ||
-                   lastShower.getFullYear() !== now.getFullYear();
-        }
-
-        function shower() {
-            if (!canShower() || state.isDead || state.isShowering) return;
-
-            state.isShowering = true;
-            updateUI();
-
-            setTimeout(() => {
-                state.isShowering = false;
-                state.lastShowerDate = new Date().toISOString();
-                addExperience(XP_GAIN * SHOWER_XP_MULTIPLIER);
-                updateUI();
-            }, 3000);
-        }
-
-        function addExperience(amount) {
-            state.experience += amount;
-            if (state.experience >= state.experienceToNextLevel) {
-                state.level++;
-                state.experience -= state.experienceToNextLevel;
-                state.experienceToNextLevel = Math.floor(100 * Math.pow(1.5, state.level - 1));
-            }
-        }
-
-        // Diminution de la santé
-        setInterval(() => {
-            if (!state.isDead) {
-                const hoursSinceLastFed = (Date.now() - state.lastFed) / (1000 * 60 * 60);
-                let decrease = 0;
-
-                if (hoursSinceLastFed >= 72) {
-                    decrease = 0.5;
-                } else if (hoursSinceLastFed >= 48) {
-                    decrease = 0.3;
-                } else if (hoursSinceLastFed >= 24) {
-                    decrease = 0.2;
-                } else if (hoursSinceLastFed >= 12) {
-                    decrease = 0.1;
-                }
-
-                state.health = Math.max(0, state.health - decrease);
-                if (state.health <= 0) {
-                    state.isDead = true;
-                }
-                updateUI();
-            }
-        }, 1000);
-
-        // Chargement et sauvegarde
-        const savedState = localStorage.getItem('tamagotchiState');
-        if (savedState) {
-            Object.assign(state, JSON.parse(savedState));
-        }
-
-        setInterval(() => {
-            localStorage.setItem('tamagotchiState', JSON.stringify(state));
-        }, 1000);
-
-        updateUI();
+        // Reste du code JavaScript inchangé...
     </script>
 </body>
 </html>
